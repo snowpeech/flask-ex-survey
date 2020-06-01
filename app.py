@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import satisfaction_survey
 
@@ -26,12 +26,26 @@ def start_survey():
 
 @app.route('/questions/<int:q_num>')
 def question_page(q_num):
-    """ Show question of given number """
-    title=satisfaction_survey.title
-    question = satisfaction_survey.questions[q_num].question
-    choices = satisfaction_survey.questions[q_num].choices
+    """ Show question for given number """    
+    if q_num == len(responses) and q_num < len(satisfaction_survey.questions):
+        title=satisfaction_survey.title
+        question = satisfaction_survey.questions[q_num].question
+        choices = satisfaction_survey.questions[q_num].choices
+        return render_template("question.html", survey_title=title, question=question, choices=choices, q_num=q_num)
 
-    return render_template("question.html", survey_title=title, question=question, choices=choices, q_num=q_num)
+    elif q_num != len(responses) and len(responses) < len(satisfaction_survey.questions):
+        flash("Please answer the questions in order")
+        return redirect(f"/questions/{len(responses)}")
+    
+    elif q_num != len(responses) and len(responses) == len(satisfaction_survey.questions):
+        flash("If you want to edit your response, please contact us")
+        return redirect("/finished")
+    
+    else:
+        """  default?"""
+        return render_template("thanks.html")
+    
+
 
 @app.route("/add-answer", methods=["POST"])
 def add_answer():
@@ -43,9 +57,13 @@ def add_answer():
     # redirect...
     q_num = len(responses)
     
-    if q_num == len(satisfaction_survey.questions):
-        return render_template("thanks.html")
+    if q_num >= len(satisfaction_survey.questions):
+        return redirect("/finished")
+
     else:
         return redirect(f"/questions/{q_num}")
-
-    # return f'<h1>Received "{comment}".</h1>'
+        
+@app.route('/finished')
+def finish_survey():
+    """ Thank user for completing survey"""
+    return render_template("thanks.html") 

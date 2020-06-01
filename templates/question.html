@@ -5,11 +5,21 @@
 <!--  -->
 {% block content %}
 <p>{{instructions}}</p>
-<!-- <form action="/questions/{{q_num}}"> -->
+
+{% for msg in get_flashed_messages() %}
+  <p>{{ msg }}</p>
+{% endfor %}
+
 <form action="/add-answer" method="POST">
   <p>{{question}}</p>
   {% for choice in choices %}
-  <input type="radio" id="{{choice}}" name="answer" value="{{choice}}" />
+  <input
+    type="radio"
+    id="{{choice}}"
+    name="answer"
+    value="{{choice}}"
+    checked
+  />
   <label for="{{choice}}">{{choice}}</label><br />
 
   {% endfor %}
