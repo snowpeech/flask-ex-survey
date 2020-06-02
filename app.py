@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, flash
+from flask import Flask, render_template, redirect, request, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import satisfaction_survey
 
@@ -13,15 +13,15 @@ app.config['SECRET_KEY'] = 'whisper'
 
 debug = DebugToolbarExtension(app)
 
-responses=[]
+# responses=[]
 #will replace q_num with len(responses)
 
-@app.route('/')
+@app.route('/home')
 def start_survey():
     """home page to start survey"""
     title=satisfaction_survey.title
     instructions = satisfaction_survey.instructions
-    responses=[]
+    # session['responses'] =[]
     return render_template("instructions.html", survey_title=title, instructions=instructions)
 
 @app.route('/questions/<int:q_num>')
@@ -53,6 +53,10 @@ def add_answer():
 
     ans = request.form['answer']
     responses.append(ans)
+
+    responses = session['responses']
+    responses.append(ans)
+    session['responses'] = responses
     
     # redirect...
     q_num = len(responses)
